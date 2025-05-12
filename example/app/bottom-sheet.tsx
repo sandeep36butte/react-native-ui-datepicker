@@ -47,6 +47,8 @@ export default function BottomSheetScreen() {
               multiRangeMode
               showOutsideDays
               timePicker
+              //  minDate={new Date("2025-06-22")}
+              // maxDate={new Date("2026-02-22")}
               //calendar="jalali"
               //locale="en"
               //numerals="arabext"

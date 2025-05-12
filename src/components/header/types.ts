@@ -14,4 +14,6 @@ export type NavigationProps = {
   styles?: Styles;
   classNames?: ClassNames;
   isRTL: boolean;
+  hidePrevSelector: boolean;
+  hideNextSelector: boolean;
 };

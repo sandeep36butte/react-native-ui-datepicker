@@ -696,6 +696,7 @@ const DateTimePicker = (
 
   const memoizedValue = useMemo(
     () => ({
+      currentActiveDate: dayjs(stateRef.current.currentDate),
       ...state,
       ...baseContextValue,
       ...handlerContextValue,

@@ -5,6 +5,8 @@ import PrevButton from './prev-button';
 import NextButton from './next-button';
 import Selectors from './selectors';
 import { isEqual } from 'lodash';
+import { useCalendarContext } from '../../calendar-context';
+import dayjs from 'dayjs';
 
 const createDefaultStyles = (isRTL: boolean) =>
   StyleSheet.create({
@@ -23,23 +25,33 @@ const createDefaultStyles = (isRTL: boolean) =>
     },
   });
 
-const NavigationButtons = ({ styles, classNames, isRTL }: NavigationProps) => {
+const NavigationButtons = ({
+  styles,
+  classNames,
+  isRTL,
+  hidePrevSelector = false,
+  hideNextSelector = false,
+}: NavigationProps) => {
   const style = useMemo(() => createDefaultStyles(isRTL), [isRTL]);
 
   return (
     <View style={style.navigation}>
-      <PrevButton
-        style={styles?.button_prev}
-        imageStyle={styles?.button_prev_image}
-        className={classNames?.button_prev}
-        imageClassName={classNames?.button_prev_image}
-      />
-      <NextButton
-        style={styles?.button_next}
-        imageStyle={styles?.button_next_image}
-        className={classNames?.button_next}
-        imageClassName={classNames?.button_next_image}
-      />
+      {!hidePrevSelector && (
+        <PrevButton
+          style={styles?.button_prev}
+          imageStyle={styles?.button_prev_image}
+          className={classNames?.button_prev}
+          imageClassName={classNames?.button_prev_image}
+        />
+      )}
+      {!hideNextSelector && (
+        <NextButton
+          style={styles?.button_next}
+          imageStyle={styles?.button_next_image}
+          className={classNames?.button_next}
+          imageClassName={classNames?.button_next_image}
+        />
+      )}
     </View>
   );
 };
@@ -51,6 +63,31 @@ const Header = ({
   isRTL,
 }: HeaderProps) => {
   const style = useMemo(() => createDefaultStyles(isRTL), [isRTL]);
+  const { calendarView, currentActiveDate, minDate, maxDate } =
+    useCalendarContext();
+
+  const monthNavigation = useMemo(() => {
+    const minDateDetails = minDate ? dayjs(minDate) : undefined;
+    const maxDateDetails = maxDate ? dayjs(maxDate) : undefined;
+    const currentActiveDateDetails = currentActiveDate
+      ? dayjs(currentActiveDate)
+      : undefined;
+    const canGoPrev =
+      !minDateDetails ||
+      calendarView !== 'day' ||
+      (currentActiveDateDetails &&
+        currentActiveDateDetails.isAfter(minDateDetails, 'month'));
+
+    const canGoNext =
+      !maxDateDetails ||
+      calendarView !== 'day' ||
+      (currentActiveDateDetails &&
+        currentActiveDateDetails.isBefore(maxDateDetails, 'month'));
+    return {
+      prev: !!canGoPrev,
+      next: !!canGoNext,
+    };
+  }, [calendarView, currentActiveDate, maxDate, minDate]);
 
   return (
     <View
@@ -64,6 +101,8 @@ const Header = ({
               styles={styles}
               classNames={classNames}
               isRTL={isRTL}
+              hidePrevSelector={!monthNavigation.prev}
+              hideNextSelector={!monthNavigation.next}
             />
             <Selectors position="left" />
           </>
@@ -74,23 +113,29 @@ const Header = ({
               styles={styles}
               classNames={classNames}
               isRTL={isRTL}
+              hidePrevSelector={!monthNavigation.prev}
+              hideNextSelector={!monthNavigation.next}
             />
           </>
         ) : (
           <>
-            <PrevButton
-              style={styles?.button_prev}
-              imageStyle={styles?.button_prev_image}
-              className={classNames?.button_prev}
-              imageClassName={classNames?.button_prev_image}
-            />
+            {monthNavigation.prev && (
+              <PrevButton
+                style={styles?.button_prev}
+                imageStyle={styles?.button_prev_image}
+                className={classNames?.button_prev}
+                imageClassName={classNames?.button_prev_image}
+              />
+            )}
             <Selectors position="around" />
-            <NextButton
-              style={styles?.button_next}
-              imageStyle={styles?.button_next_image}
-              className={classNames?.button_next}
-              imageClassName={classNames?.button_next_image}
-            />
+            {monthNavigation.next && (
+              <NextButton
+                style={styles?.button_next}
+                imageStyle={styles?.button_next_image}
+                className={classNames?.button_next}
+                imageClassName={classNames?.button_next_image}
+              />
+            )}
           </>
         )}
       </View>
